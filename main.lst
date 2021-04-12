@@ -1,0 +1,1633 @@
+   1               		.file	"main.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               	.global	set_num
+  12               	set_num:
+  13               	.LVL0:
+  14               	.LFB1:
+  15               		.file 1 "main.c"
+   1:main.c        **** #include <avr/io.h>
+   2:main.c        **** #include <avr/interrupt.h>
+   3:main.c        **** 
+   4:main.c        **** #ifndef F_CPU
+   5:main.c        **** #define F_CPU 14745600
+   6:main.c        **** #endif /* F_CPU */
+   7:main.c        **** 
+   8:main.c        **** const unsigned char num[10] =
+   9:main.c        **** {
+  10:main.c        **** 	~0x3F & 0x7F,
+  11:main.c        **** 	~0x06 & 0x7F,
+  12:main.c        **** 	~0x5B & 0x7F,
+  13:main.c        **** 	~0x4F & 0x7F,
+  14:main.c        **** 	~0x66 & 0x7F,
+  15:main.c        **** 	~0x6D & 0x7F,
+  16:main.c        **** 	~0x7D & 0x7F,
+  17:main.c        **** 	~0x07 & 0x7F,
+  18:main.c        **** 	~0x7F & 0x7F,
+  19:main.c        **** 	~0x6F & 0x7F
+  20:main.c        **** };
+  21:main.c        **** 
+  22:main.c        **** volatile unsigned char segment[4] = {0xFF, 0xFF, 0xFF, 0xFF};
+  23:main.c        **** 
+  24:main.c        **** void isr_led_disp(void);
+  25:main.c        **** void set_num(unsigned char i, unsigned char n);
+  26:main.c        **** void set_dot(unsigned char i, unsigned char s);
+  27:main.c        **** void itobcd(unsigned short n, unsigned char *s);
+  28:main.c        **** 
+  29:main.c        **** int main(void)
+  30:main.c        **** {
+  31:main.c        **** 	/* init timer, ctc mode, prescaler 64, 1 ms interrupt */
+  32:main.c        **** 	TCCR0 = (1 << WGM01) | (1 << CS01) | (1 << CS00);
+  33:main.c        **** 	OCR0 = 23;
+  34:main.c        **** 	TIMSK = (1 << OCIE0);
+  35:main.c        **** 
+  36:main.c        **** 	DDRA = 0x0F;
+  37:main.c        **** 	DDRC = 0xFF; /* 11111111 */
+  38:main.c        **** 
+  39:main.c        **** 	PORTA = (1 << PA4) | (1 << PA5) | (1 << PA6);
+  40:main.c        **** 
+  41:main.c        **** 	set_dot(2, 1);
+  42:main.c        **** 
+  43:main.c        **** 	set_num(0, 0);
+  44:main.c        **** 	set_num(1, 0);
+  45:main.c        **** 	set_num(2, 0);
+  46:main.c        **** 	set_num(3, 0);
+  47:main.c        **** 
+  48:main.c        **** 	asm volatile("sei");
+  49:main.c        **** 
+  50:main.c        **** 	while(1)
+  51:main.c        **** 	{
+  52:main.c        **** 
+  53:main.c        **** 	}
+  54:main.c        **** 
+  55:main.c        **** 	return 0;
+  56:main.c        **** }
+  57:main.c        **** 
+  58:main.c        **** void set_num(unsigned char i, unsigned char n)
+  59:main.c        **** {
+  16               		.loc 1 59 1 view -0
+  17               		.cfi_startproc
+  18               	/* prologue: function */
+  19               	/* frame size = 0 */
+  20               	/* stack size = 0 */
+  21               	.L__stack_usage = 0
+  60:main.c        **** 	unsigned char p;
+  22               		.loc 1 60 2 view .LVU1
+  61:main.c        **** 	p = i & 0x03;
+  23               		.loc 1 61 2 view .LVU2
+  62:main.c        **** 	segment[p] &= 0x80;
+  24               		.loc 1 62 2 view .LVU3
+  61:main.c        **** 	p = i & 0x03;
+  25               		.loc 1 61 4 is_stmt 0 view .LVU4
+  26 0000 8370      		andi r24,lo8(3)
+  27               	.LVL1:
+  28               		.loc 1 62 13 view .LVU5
+  29 0002 E82F      		mov r30,r24
+  30 0004 F0E0      		ldi r31,0
+  31 0006 E050      		subi r30,lo8(-(segment))
+  32 0008 F040      		sbci r31,hi8(-(segment))
+  33 000a 8081      		ld r24,Z
+  34               	.LVL2:
+  35               		.loc 1 62 13 view .LVU6
+  36 000c 8078      		andi r24,lo8(-128)
+  37 000e 8083      		st Z,r24
+  63:main.c        **** 	segment[p] |= num[n];
+  38               		.loc 1 63 2 is_stmt 1 view .LVU7
+  39               		.loc 1 63 13 is_stmt 0 view .LVU8
+  40 0010 8081      		ld r24,Z
+  41               		.loc 1 63 19 view .LVU9
+  42 0012 A62F      		mov r26,r22
+  43 0014 B0E0      		ldi r27,0
+  44 0016 A050      		subi r26,lo8(-(num))
+  45 0018 B040      		sbci r27,hi8(-(num))
+  46               		.loc 1 63 13 view .LVU10
+  47 001a 9C91      		ld r25,X
+  48 001c 892B      		or r24,r25
+  49 001e 8083      		st Z,r24
+  50               	/* epilogue start */
+  64:main.c        **** }
+  51               		.loc 1 64 1 view .LVU11
+  52 0020 0895      		ret
+  53               		.cfi_endproc
+  54               	.LFE1:
+  56               		.section	.text.startup,"ax",@progbits
+  57               	.global	main
+  59               	main:
+  60               	.LFB0:
+  30:main.c        **** 	/* init timer, ctc mode, prescaler 64, 1 ms interrupt */
+  61               		.loc 1 30 1 is_stmt 1 view -0
+  62               		.cfi_startproc
+  63               	/* prologue: function */
+  64               	/* frame size = 0 */
+  65               	/* stack size = 0 */
+  66               	.L__stack_usage = 0
+  32:main.c        **** 	OCR0 = 23;
+  67               		.loc 1 32 2 view .LVU13
+  32:main.c        **** 	OCR0 = 23;
+  68               		.loc 1 32 8 is_stmt 0 view .LVU14
+  69 0000 8BE0      		ldi r24,lo8(11)
+  70 0002 83BF      		out 0x33,r24
+  33:main.c        **** 	TIMSK = (1 << OCIE0);
+  71               		.loc 1 33 2 is_stmt 1 view .LVU15
+  33:main.c        **** 	TIMSK = (1 << OCIE0);
+  72               		.loc 1 33 7 is_stmt 0 view .LVU16
+  73 0004 87E1      		ldi r24,lo8(23)
+  74 0006 81BF      		out 0x31,r24
+  34:main.c        **** 
+  75               		.loc 1 34 2 is_stmt 1 view .LVU17
+  34:main.c        **** 
+  76               		.loc 1 34 8 is_stmt 0 view .LVU18
+  77 0008 81E0      		ldi r24,lo8(1)
+  78 000a 89BF      		out 0x39,r24
+  36:main.c        **** 	DDRC = 0xFF; /* 11111111 */
+  79               		.loc 1 36 2 is_stmt 1 view .LVU19
+  36:main.c        **** 	DDRC = 0xFF; /* 11111111 */
+  80               		.loc 1 36 7 is_stmt 0 view .LVU20
+  81 000c 8FE0      		ldi r24,lo8(15)
+  82 000e 8ABB      		out 0x1a,r24
+  37:main.c        **** 
+  83               		.loc 1 37 2 is_stmt 1 view .LVU21
+  37:main.c        **** 
+  84               		.loc 1 37 7 is_stmt 0 view .LVU22
+  85 0010 8FEF      		ldi r24,lo8(-1)
+  86 0012 84BB      		out 0x14,r24
+  39:main.c        **** 
+  87               		.loc 1 39 2 is_stmt 1 view .LVU23
+  39:main.c        **** 
+  88               		.loc 1 39 8 is_stmt 0 view .LVU24
+  89 0014 80E7      		ldi r24,lo8(112)
+  90 0016 8BBB      		out 0x1b,r24
+  41:main.c        **** 
+  91               		.loc 1 41 2 is_stmt 1 view .LVU25
+  92               	.LVL3:
+  93               	.LBB10:
+  94               	.LBI10:
+  65:main.c        **** 
+  66:main.c        **** void set_dot(unsigned char i, unsigned char s)
+  95               		.loc 1 66 6 view .LVU26
+  96               	.LBB11:
+  67:main.c        **** {
+  68:main.c        **** 	if(i < 4)
+  97               		.loc 1 68 2 view .LVU27
+  69:main.c        **** 	{
+  70:main.c        **** 		segment[i] = (s) ? (segment[i] & 0x7F) : (segment[i] | 0x80);
+  98               		.loc 1 70 3 view .LVU28
+  99               		.loc 1 70 30 is_stmt 0 view .LVU29
+ 100 0018 8091 0000 		lds r24,segment+2
+ 101               		.loc 1 70 14 view .LVU30
+ 102 001c 8F77      		andi r24,lo8(127)
+ 103 001e 8093 0000 		sts segment+2,r24
+ 104               	.LVL4:
+ 105               		.loc 1 70 14 view .LVU31
+ 106               	.LBE11:
+ 107               	.LBE10:
+  43:main.c        **** 	set_num(1, 0);
+ 108               		.loc 1 43 2 is_stmt 1 view .LVU32
+ 109 0022 60E0      		ldi r22,0
+ 110 0024 80E0      		ldi r24,0
+ 111 0026 00D0      		rcall set_num
+ 112               	.LVL5:
+  44:main.c        **** 	set_num(2, 0);
+ 113               		.loc 1 44 2 view .LVU33
+ 114 0028 60E0      		ldi r22,0
+ 115 002a 81E0      		ldi r24,lo8(1)
+ 116 002c 00D0      		rcall set_num
+ 117               	.LVL6:
+  45:main.c        **** 	set_num(3, 0);
+ 118               		.loc 1 45 2 view .LVU34
+ 119 002e 60E0      		ldi r22,0
+ 120 0030 82E0      		ldi r24,lo8(2)
+ 121 0032 00D0      		rcall set_num
+ 122               	.LVL7:
+  46:main.c        **** 
+ 123               		.loc 1 46 2 view .LVU35
+ 124 0034 60E0      		ldi r22,0
+ 125 0036 83E0      		ldi r24,lo8(3)
+ 126 0038 00D0      		rcall set_num
+ 127               	.LVL8:
+  48:main.c        **** 
+ 128               		.loc 1 48 2 view .LVU36
+ 129               	/* #APP */
+ 130               	 ;  48 "main.c" 1
+ 131 003a 7894      		sei
+ 132               	 ;  0 "" 2
+ 133               	/* #NOAPP */
+ 134               	.L3:
+  50:main.c        **** 	{
+ 135               		.loc 1 50 2 discriminator 1 view .LVU37
+  53:main.c        **** 
+ 136               		.loc 1 53 2 discriminator 1 view .LVU38
+  50:main.c        **** 	{
+ 137               		.loc 1 50 7 discriminator 1 view .LVU39
+ 138 003c 00C0      		rjmp .L3
+ 139               		.cfi_endproc
+ 140               	.LFE0:
+ 142               		.text
+ 143               	.global	set_dot
+ 145               	set_dot:
+ 146               	.LVL9:
+ 147               	.LFB2:
+  67:main.c        **** 	if(i < 4)
+ 148               		.loc 1 67 1 view -0
+ 149               		.cfi_startproc
+ 150               	/* prologue: function */
+ 151               	/* frame size = 0 */
+ 152               	/* stack size = 0 */
+ 153               	.L__stack_usage = 0
+  68:main.c        **** 	{
+ 154               		.loc 1 68 2 view .LVU41
+  68:main.c        **** 	{
+ 155               		.loc 1 68 4 is_stmt 0 view .LVU42
+ 156 0022 8430      		cpi r24,lo8(4)
+ 157 0024 00F4      		brsh .L5
+ 158               		.loc 1 70 3 is_stmt 1 view .LVU43
+ 159               		.loc 1 70 30 is_stmt 0 view .LVU44
+ 160 0026 E82F      		mov r30,r24
+ 161 0028 F0E0      		ldi r31,0
+ 162 002a E050      		subi r30,lo8(-(segment))
+ 163 002c F040      		sbci r31,hi8(-(segment))
+ 164 002e 8081      		ld r24,Z
+ 165               	.LVL10:
+ 166               		.loc 1 70 14 view .LVU45
+ 167 0030 6623      		tst r22
+ 168 0032 01F0      		breq .L6
+ 169               		.loc 1 70 14 discriminator 1 view .LVU46
+ 170 0034 8F77      		andi r24,lo8(127)
+ 171               	.L7:
+ 172               		.loc 1 70 14 discriminator 4 view .LVU47
+ 173 0036 8083      		st Z,r24
+ 174 0038 0895      		ret
+ 175               	.L6:
+ 176               		.loc 1 70 14 discriminator 2 view .LVU48
+ 177 003a 8068      		ori r24,lo8(-128)
+ 178 003c 00C0      		rjmp .L7
+ 179               	.LVL11:
+ 180               	.L5:
+  71:main.c        **** 	}
+  72:main.c        **** 	else
+  73:main.c        **** 	{
+  74:main.c        **** 		if(s)
+ 181               		.loc 1 74 3 is_stmt 1 view .LVU49
+ 182               		.loc 1 74 5 is_stmt 0 view .LVU50
+ 183 003e 6623      		tst r22
+ 184 0040 01F0      		breq .L9
+ 185               	.LBB14:
+ 186               	.LBI14:
+  66:main.c        **** {
+ 187               		.loc 1 66 6 is_stmt 1 view .LVU51
+ 188               	.LVL12:
+ 189               	.LBB15:
+  75:main.c        **** 		{
+  76:main.c        **** 			PORTA &= ~(1 << PA4);
+ 190               		.loc 1 76 4 view .LVU52
+ 191               		.loc 1 76 10 is_stmt 0 view .LVU53
+ 192 0042 DC98      		cbi 0x1b,4
+  77:main.c        **** 		}
+  78:main.c        **** 		else
+  79:main.c        **** 		{
+  80:main.c        **** 			PORTA |= (1 << PA4);
+  81:main.c        **** 		}
+  82:main.c        **** 	}
+  83:main.c        **** }
+ 193               		.loc 1 83 1 view .LVU54
+ 194 0044 0895      		ret
+ 195               	.LVL13:
+ 196               	.L9:
+ 197               		.loc 1 83 1 view .LVU55
+ 198               	.LBE15:
+ 199               	.LBE14:
+  80:main.c        **** 		}
+ 200               		.loc 1 80 4 is_stmt 1 view .LVU56
+  80:main.c        **** 		}
+ 201               		.loc 1 80 10 is_stmt 0 view .LVU57
+ 202 0046 DC9A      		sbi 0x1b,4
+ 203               	/* epilogue start */
+ 204               		.loc 1 83 1 view .LVU58
+ 205 0048 0895      		ret
+ 206               		.cfi_endproc
+ 207               	.LFE2:
+ 209               	.global	isr_led_disp
+ 211               	isr_led_disp:
+ 212               	.LFB3:
+  84:main.c        **** 
+  85:main.c        **** void isr_led_disp(void)
+  86:main.c        **** {
+ 213               		.loc 1 86 1 is_stmt 1 view -0
+ 214               		.cfi_startproc
+ 215               	/* prologue: function */
+ 216               	/* frame size = 0 */
+ 217               	/* stack size = 0 */
+ 218               	.L__stack_usage = 0
+  87:main.c        **** 	static unsigned char cur_seg = 0;
+ 219               		.loc 1 87 2 view .LVU60
+  88:main.c        **** 
+  89:main.c        **** 	PORTA &= ~(1 << cur_seg);
+ 220               		.loc 1 89 2 view .LVU61
+ 221               		.loc 1 89 8 is_stmt 0 view .LVU62
+ 222 004a 2BB3      		in r18,0x1b
+ 223               		.loc 1 89 15 view .LVU63
+ 224 004c 3091 0000 		lds r19,cur_seg.13
+ 225 0050 81E0      		ldi r24,lo8(1)
+ 226 0052 90E0      		ldi r25,0
+ 227 0054 00C0      		rjmp 2f
+ 228               		1:
+ 229 0056 880F      		lsl r24
+ 230               		2:
+ 231 0058 3A95      		dec r19
+ 232 005a 02F4      		brpl 1b
+ 233               		.loc 1 89 8 view .LVU64
+ 234 005c 8095      		com r24
+ 235 005e 8223      		and r24,r18
+ 236 0060 8BBB      		out 0x1b,r24
+  90:main.c        **** 
+  91:main.c        **** 	if(++cur_seg == 4)
+ 237               		.loc 1 91 2 is_stmt 1 view .LVU65
+ 238               		.loc 1 91 5 is_stmt 0 view .LVU66
+ 239 0062 8091 0000 		lds r24,cur_seg.13
+ 240 0066 91E0      		ldi r25,lo8(1)
+ 241 0068 980F      		add r25,r24
+ 242               		.loc 1 91 4 view .LVU67
+ 243 006a 8330      		cpi r24,lo8(3)
+ 244 006c 01F0      		breq .L11
+ 245 006e 9093 0000 		sts cur_seg.13,r25
+ 246               	.L12:
+  92:main.c        **** 	{
+  93:main.c        **** 		cur_seg = 0;
+  94:main.c        **** 	}
+  95:main.c        **** 
+  96:main.c        **** 	PORTC = segment[cur_seg];
+ 247               		.loc 1 96 2 is_stmt 1 view .LVU68
+ 248               		.loc 1 96 17 is_stmt 0 view .LVU69
+ 249 0072 E091 0000 		lds r30,cur_seg.13
+ 250 0076 F0E0      		ldi r31,0
+ 251 0078 E050      		subi r30,lo8(-(segment))
+ 252 007a F040      		sbci r31,hi8(-(segment))
+ 253 007c 8081      		ld r24,Z
+ 254               		.loc 1 96 8 view .LVU70
+ 255 007e 85BB      		out 0x15,r24
+  97:main.c        **** 	PORTA |= (1 << cur_seg);
+ 256               		.loc 1 97 2 is_stmt 1 view .LVU71
+ 257               		.loc 1 97 8 is_stmt 0 view .LVU72
+ 258 0080 8BB3      		in r24,0x1b
+ 259               		.loc 1 97 14 view .LVU73
+ 260 0082 9091 0000 		lds r25,cur_seg.13
+ 261 0086 21E0      		ldi r18,lo8(1)
+ 262 0088 30E0      		ldi r19,0
+ 263 008a 00C0      		rjmp 2f
+ 264               		1:
+ 265 008c 220F      		lsl r18
+ 266               		2:
+ 267 008e 9A95      		dec r25
+ 268 0090 02F4      		brpl 1b
+ 269               		.loc 1 97 8 view .LVU74
+ 270 0092 822B      		or r24,r18
+ 271 0094 8BBB      		out 0x1b,r24
+ 272               	/* epilogue start */
+  98:main.c        **** }
+ 273               		.loc 1 98 1 view .LVU75
+ 274 0096 0895      		ret
+ 275               	.L11:
+  93:main.c        **** 	}
+ 276               		.loc 1 93 3 is_stmt 1 view .LVU76
+  93:main.c        **** 	}
+ 277               		.loc 1 93 11 is_stmt 0 view .LVU77
+ 278 0098 1092 0000 		sts cur_seg.13,__zero_reg__
+ 279 009c 00C0      		rjmp .L12
+ 280               		.cfi_endproc
+ 281               	.LFE3:
+ 283               	.global	itobcd
+ 285               	itobcd:
+ 286               	.LVL14:
+ 287               	.LFB4:
+  99:main.c        **** 
+ 100:main.c        **** void itobcd(unsigned short n, unsigned char *s)
+ 101:main.c        **** {
+ 288               		.loc 1 101 1 is_stmt 1 view -0
+ 289               		.cfi_startproc
+ 290               		.loc 1 101 1 is_stmt 0 view .LVU79
+ 291 009e BF92      		push r11
+ 292               	.LCFI0:
+ 293               		.cfi_def_cfa_offset 3
+ 294               		.cfi_offset 11, -2
+ 295 00a0 CF92      		push r12
+ 296               	.LCFI1:
+ 297               		.cfi_def_cfa_offset 4
+ 298               		.cfi_offset 12, -3
+ 299 00a2 DF92      		push r13
+ 300               	.LCFI2:
+ 301               		.cfi_def_cfa_offset 5
+ 302               		.cfi_offset 13, -4
+ 303 00a4 EF92      		push r14
+ 304               	.LCFI3:
+ 305               		.cfi_def_cfa_offset 6
+ 306               		.cfi_offset 14, -5
+ 307 00a6 FF92      		push r15
+ 308               	.LCFI4:
+ 309               		.cfi_def_cfa_offset 7
+ 310               		.cfi_offset 15, -6
+ 311 00a8 0F93      		push r16
+ 312               	.LCFI5:
+ 313               		.cfi_def_cfa_offset 8
+ 314               		.cfi_offset 16, -7
+ 315 00aa 1F93      		push r17
+ 316               	.LCFI6:
+ 317               		.cfi_def_cfa_offset 9
+ 318               		.cfi_offset 17, -8
+ 319 00ac CF93      		push r28
+ 320               	.LCFI7:
+ 321               		.cfi_def_cfa_offset 10
+ 322               		.cfi_offset 28, -9
+ 323 00ae DF93      		push r29
+ 324               	.LCFI8:
+ 325               		.cfi_def_cfa_offset 11
+ 326               		.cfi_offset 29, -10
+ 327               	/* prologue: function */
+ 328               	/* frame size = 0 */
+ 329               	/* stack size = 9 */
+ 330               	.L__stack_usage = 9
+ 331 00b0 FC01      		movw r30,r24
+ 332 00b2 EB01      		movw r28,r22
+ 102:main.c        **** 	unsigned short a, mod = 1;
+ 333               		.loc 1 102 2 is_stmt 1 view .LVU80
+ 334               	.LVL15:
+ 103:main.c        **** 	unsigned char idx = 0, tmp = 0;
+ 335               		.loc 1 103 2 view .LVU81
+ 336               		.loc 1 103 2 is_stmt 0 view .LVU82
+ 337 00b4 8B01      		movw r16,r22
+ 338               		.loc 1 103 16 view .LVU83
+ 339 00b6 20E0      		ldi r18,0
+ 102:main.c        **** 	unsigned short a, mod = 1;
+ 340               		.loc 1 102 20 view .LVU84
+ 341 00b8 EE24      		clr r14
+ 342 00ba E394      		inc r14
+ 343 00bc F12C      		mov r15,__zero_reg__
+ 344               	.LVL16:
+ 104:main.c        **** 
+ 105:main.c        **** 	do
+ 106:main.c        **** 	{
+ 107:main.c        **** 		mod *= 10;
+ 345               		.loc 1 107 7 view .LVU85
+ 346 00be 9AE0      		ldi r25,lo8(10)
+ 347 00c0 B92E      		mov r11,r25
+ 108:main.c        **** 		a = n % mod;
+ 109:main.c        **** 		n -= a;
+ 110:main.c        **** 
+ 111:main.c        **** 		if(a == 0)
+ 112:main.c        **** 		{
+ 113:main.c        **** 			s[idx++] = 0;
+ 114:main.c        **** 			continue;
+ 115:main.c        **** 		}
+ 116:main.c        **** 
+ 117:main.c        **** 		while(a % 10 == 0)
+ 118:main.c        **** 		{
+ 119:main.c        **** 			a /= 10;
+ 348               		.loc 1 119 6 view .LVU86
+ 349 00c2 3AE0      		ldi r19,lo8(10)
+ 350 00c4 C32E      		mov r12,r19
+ 351 00c6 D12C      		mov r13,__zero_reg__
+ 352               	.LVL17:
+ 353               	.L21:
+ 105:main.c        **** 	{
+ 354               		.loc 1 105 2 is_stmt 1 view .LVU87
+ 107:main.c        **** 		a = n % mod;
+ 355               		.loc 1 107 3 view .LVU88
+ 107:main.c        **** 		a = n % mod;
+ 356               		.loc 1 107 7 is_stmt 0 view .LVU89
+ 357 00c8 C701      		movw r24,r14
+ 358 00ca B89E      		mul r11,r24
+ 359 00cc 7001      		movw r14,r0
+ 360 00ce B99E      		mul r11,r25
+ 361 00d0 F00C      		add r15,r0
+ 362 00d2 1124      		clr __zero_reg__
+ 363               	.LVL18:
+ 108:main.c        **** 		a = n % mod;
+ 364               		.loc 1 108 3 is_stmt 1 view .LVU90
+ 108:main.c        **** 		a = n % mod;
+ 365               		.loc 1 108 5 is_stmt 0 view .LVU91
+ 366 00d4 CF01      		movw r24,r30
+ 367 00d6 B701      		movw r22,r14
+ 368 00d8 00D0      		rcall __udivmodhi4
+ 369 00da AC01      		movw r20,r24
+ 370 00dc 382F      		mov r19,r24
+ 371 00de 952F      		mov r25,r21
+ 372               	.LVL19:
+ 109:main.c        **** 
+ 373               		.loc 1 109 3 is_stmt 1 view .LVU92
+ 109:main.c        **** 
+ 374               		.loc 1 109 5 is_stmt 0 view .LVU93
+ 375 00e0 E41B      		sub r30,r20
+ 376 00e2 F50B      		sbc r31,r21
+ 377               	.LVL20:
+ 111:main.c        **** 		{
+ 378               		.loc 1 111 3 is_stmt 1 view .LVU94
+ 113:main.c        **** 			continue;
+ 379               		.loc 1 113 9 is_stmt 0 view .LVU95
+ 380 00e4 2F5F      		subi r18,lo8(-(1))
+ 381               	.LVL21:
+ 111:main.c        **** 		{
+ 382               		.loc 1 111 5 view .LVU96
+ 383 00e6 452B      		or r20,r21
+ 384 00e8 01F4      		brne .L14
+ 113:main.c        **** 			continue;
+ 385               		.loc 1 113 4 is_stmt 1 view .LVU97
+ 386               	.LVL22:
+ 113:main.c        **** 			continue;
+ 387               		.loc 1 113 13 is_stmt 0 view .LVU98
+ 388 00ea D801      		movw r26,r16
+ 389 00ec 1C92      		st X,__zero_reg__
+ 114:main.c        **** 		}
+ 390               		.loc 1 114 4 is_stmt 1 view .LVU99
+ 391               	.LVL23:
+ 392               	.L15:
+ 120:main.c        **** 		}
+ 121:main.c        **** 
+ 122:main.c        **** 		s[idx++] = a;
+ 123:main.c        **** 	}
+ 124:main.c        **** 	while(n != 0 && idx < 4);
+ 393               		.loc 1 124 7 view .LVU100
+ 394               		.loc 1 124 2 is_stmt 0 view .LVU101
+ 395 00ee 3097      		sbiw r30,0
+ 396 00f0 01F4      		brne .L17
+ 125:main.c        **** 
+ 126:main.c        **** 	for(; idx < 4; ++idx)
+ 127:main.c        **** 	{
+ 128:main.c        **** 		s[idx] = 0;
+ 397               		.loc 1 128 10 view .LVU102
+ 398 00f2 44E0      		ldi r20,lo8(4)
+ 399 00f4 421B      		sub r20,r18
+ 400 00f6 50E0      		ldi r21,0
+ 401 00f8 2530      		cpi r18,lo8(5)
+ 402 00fa 00F0      		brlo .L19
+ 403 00fc 50E0      		ldi r21,0
+ 404 00fe 40E0      		ldi r20,0
+ 405               	.L19:
+ 406               		.loc 1 128 10 view .LVU103
+ 407 0100 70E0      		ldi r23,0
+ 408 0102 60E0      		ldi r22,0
+ 409 0104 CE01      		movw r24,r28
+ 410 0106 820F      		add r24,r18
+ 411 0108 911D      		adc r25,__zero_reg__
+ 412 010a 00D0      		rcall memset
+ 413               	.LVL24:
+ 414               	.L20:
+ 129:main.c        **** 	}
+ 130:main.c        **** 
+ 131:main.c        **** 	tmp = s[0];
+ 415               		.loc 1 131 2 is_stmt 1 view .LVU104
+ 416               		.loc 1 131 6 is_stmt 0 view .LVU105
+ 417 010c 8881      		ld r24,Y
+ 418               	.LVL25:
+ 132:main.c        **** 	s[0] = s[3];
+ 419               		.loc 1 132 2 is_stmt 1 view .LVU106
+ 420               		.loc 1 132 7 is_stmt 0 view .LVU107
+ 421 010e 9B81      		ldd r25,Y+3
+ 422 0110 9883      		st Y,r25
+ 133:main.c        **** 	s[3] = tmp;
+ 423               		.loc 1 133 2 is_stmt 1 view .LVU108
+ 424               		.loc 1 133 7 is_stmt 0 view .LVU109
+ 425 0112 8B83      		std Y+3,r24
+ 134:main.c        **** 
+ 135:main.c        **** 	tmp = s[1];
+ 426               		.loc 1 135 2 is_stmt 1 view .LVU110
+ 427               	.LVL26:
+ 136:main.c        **** 	s[1] = s[2];
+ 428               		.loc 1 136 2 view .LVU111
+ 137:main.c        **** 	s[2] = tmp;
+ 429               		.loc 1 137 2 view .LVU112
+ 136:main.c        **** 	s[1] = s[2];
+ 430               		.loc 1 136 7 is_stmt 0 view .LVU113
+ 431 0114 8981      		ldd r24,Y+1
+ 432 0116 9A81      		ldd r25,Y+2
+ 433 0118 9827      		eor r25,r24
+ 434 011a 8927      		eor r24,r25
+ 435 011c 9827      		eor r25,r24
+ 436 011e 9A83      		std Y+2,r25
+ 437 0120 8983      		std Y+1,r24
+ 438               	.LVL27:
+ 439               	/* epilogue start */
+ 138:main.c        **** }
+ 440               		.loc 1 138 1 view .LVU114
+ 441 0122 DF91      		pop r29
+ 442 0124 CF91      		pop r28
+ 443               	.LVL28:
+ 444               		.loc 1 138 1 view .LVU115
+ 445 0126 1F91      		pop r17
+ 446 0128 0F91      		pop r16
+ 447 012a FF90      		pop r15
+ 448 012c EF90      		pop r14
+ 449               	.LVL29:
+ 450               		.loc 1 138 1 view .LVU116
+ 451 012e DF90      		pop r13
+ 452 0130 CF90      		pop r12
+ 453 0132 BF90      		pop r11
+ 454               		.loc 1 138 1 view .LVU117
+ 455 0134 0895      		ret
+ 456               	.LVL30:
+ 457               	.L16:
+ 119:main.c        **** 		}
+ 458               		.loc 1 119 4 is_stmt 1 view .LVU118
+ 119:main.c        **** 		}
+ 459               		.loc 1 119 6 is_stmt 0 view .LVU119
+ 460 0136 362F      		mov r19,r22
+ 461               	.LVL31:
+ 119:main.c        **** 		}
+ 462               		.loc 1 119 6 view .LVU120
+ 463 0138 972F      		mov r25,r23
+ 464               	.L14:
+ 465               	.LVL32:
+ 117:main.c        **** 		{
+ 466               		.loc 1 117 8 is_stmt 1 view .LVU121
+ 119:main.c        **** 		}
+ 467               		.loc 1 119 6 is_stmt 0 view .LVU122
+ 468 013a 832F      		mov r24,r19
+ 469 013c B601      		movw r22,r12
+ 470 013e 00D0      		rcall __udivmodhi4
+ 117:main.c        **** 		{
+ 471               		.loc 1 117 8 view .LVU123
+ 472 0140 892B      		or r24,r25
+ 473 0142 01F0      		breq .L16
+ 122:main.c        **** 	}
+ 474               		.loc 1 122 3 is_stmt 1 view .LVU124
+ 475               	.LVL33:
+ 122:main.c        **** 	}
+ 476               		.loc 1 122 12 is_stmt 0 view .LVU125
+ 477 0144 D801      		movw r26,r16
+ 478 0146 3C93      		st X,r19
+ 479 0148 00C0      		rjmp .L15
+ 480               	.LVL34:
+ 481               	.L17:
+ 124:main.c        **** 
+ 482               		.loc 1 124 15 discriminator 1 view .LVU126
+ 483 014a 0F5F      		subi r16,-1
+ 484 014c 1F4F      		sbci r17,-1
+ 485 014e 2430      		cpi r18,lo8(4)
+ 486 0150 01F0      		breq .+2
+ 487 0152 00C0      		rjmp .L21
+ 488 0154 00C0      		rjmp .L20
+ 489               		.cfi_endproc
+ 490               	.LFE4:
+ 492               	.global	__vector_14
+ 494               	__vector_14:
+ 495               	.LFB5:
+ 139:main.c        **** 
+ 140:main.c        **** ISR(TIMER0_COMP_vect)
+ 141:main.c        **** {
+ 496               		.loc 1 141 1 is_stmt 1 view -0
+ 497               		.cfi_startproc
+ 498 0156 1F92      		push r1
+ 499               	.LCFI9:
+ 500               		.cfi_def_cfa_offset 3
+ 501               		.cfi_offset 1, -2
+ 502 0158 0F92      		push r0
+ 503               	.LCFI10:
+ 504               		.cfi_def_cfa_offset 4
+ 505               		.cfi_offset 0, -3
+ 506 015a 0FB6      		in r0,__SREG__
+ 507 015c 0F92      		push r0
+ 508 015e 1124      		clr __zero_reg__
+ 509 0160 0F93      		push r16
+ 510               	.LCFI11:
+ 511               		.cfi_def_cfa_offset 5
+ 512               		.cfi_offset 16, -4
+ 513 0162 1F93      		push r17
+ 514               	.LCFI12:
+ 515               		.cfi_def_cfa_offset 6
+ 516               		.cfi_offset 17, -5
+ 517 0164 2F93      		push r18
+ 518               	.LCFI13:
+ 519               		.cfi_def_cfa_offset 7
+ 520               		.cfi_offset 18, -6
+ 521 0166 3F93      		push r19
+ 522               	.LCFI14:
+ 523               		.cfi_def_cfa_offset 8
+ 524               		.cfi_offset 19, -7
+ 525 0168 4F93      		push r20
+ 526               	.LCFI15:
+ 527               		.cfi_def_cfa_offset 9
+ 528               		.cfi_offset 20, -8
+ 529 016a 5F93      		push r21
+ 530               	.LCFI16:
+ 531               		.cfi_def_cfa_offset 10
+ 532               		.cfi_offset 21, -9
+ 533 016c 6F93      		push r22
+ 534               	.LCFI17:
+ 535               		.cfi_def_cfa_offset 11
+ 536               		.cfi_offset 22, -10
+ 537 016e 7F93      		push r23
+ 538               	.LCFI18:
+ 539               		.cfi_def_cfa_offset 12
+ 540               		.cfi_offset 23, -11
+ 541 0170 8F93      		push r24
+ 542               	.LCFI19:
+ 543               		.cfi_def_cfa_offset 13
+ 544               		.cfi_offset 24, -12
+ 545 0172 9F93      		push r25
+ 546               	.LCFI20:
+ 547               		.cfi_def_cfa_offset 14
+ 548               		.cfi_offset 25, -13
+ 549 0174 AF93      		push r26
+ 550               	.LCFI21:
+ 551               		.cfi_def_cfa_offset 15
+ 552               		.cfi_offset 26, -14
+ 553 0176 BF93      		push r27
+ 554               	.LCFI22:
+ 555               		.cfi_def_cfa_offset 16
+ 556               		.cfi_offset 27, -15
+ 557 0178 CF93      		push r28
+ 558               	.LCFI23:
+ 559               		.cfi_def_cfa_offset 17
+ 560               		.cfi_offset 28, -16
+ 561 017a DF93      		push r29
+ 562               	.LCFI24:
+ 563               		.cfi_def_cfa_offset 18
+ 564               		.cfi_offset 29, -17
+ 565 017c EF93      		push r30
+ 566               	.LCFI25:
+ 567               		.cfi_def_cfa_offset 19
+ 568               		.cfi_offset 30, -18
+ 569 017e FF93      		push r31
+ 570               	.LCFI26:
+ 571               		.cfi_def_cfa_offset 20
+ 572               		.cfi_offset 31, -19
+ 573               	/* prologue: Signal */
+ 574               	/* frame size = 0 */
+ 575               	/* stack size = 19 */
+ 576               	.L__stack_usage = 19
+ 142:main.c        **** 	static unsigned char val[4];
+ 577               		.loc 1 142 2 view .LVU128
+ 143:main.c        **** 	static unsigned short hms = 0, cnt = 0, fct = 0, sbd = 0;
+ 578               		.loc 1 143 2 view .LVU129
+ 144:main.c        **** 	static unsigned char btn_reset = 0, btn_cont = 0, btn_touch = 0,
+ 579               		.loc 1 144 2 view .LVU130
+ 145:main.c        **** 	cms = 0, running = 0, flash = 0, sb = 0;
+ 146:main.c        **** 	static unsigned short touch = 0;
+ 580               		.loc 1 146 2 view .LVU131
+ 147:main.c        **** 	unsigned char i;
+ 581               		.loc 1 147 2 view .LVU132
+ 148:main.c        **** 
+ 149:main.c        **** 	if(sb)
+ 582               		.loc 1 149 2 view .LVU133
+ 583               		.loc 1 149 4 is_stmt 0 view .LVU134
+ 584 0180 8091 0000 		lds r24,sb.12
+ 585 0184 8823      		tst r24
+ 586 0186 01F4      		brne .+2
+ 587 0188 00C0      		rjmp .L25
+ 150:main.c        **** 	{
+ 151:main.c        **** 		if(++sbd == 10000)
+ 588               		.loc 1 151 3 is_stmt 1 view .LVU135
+ 589               		.loc 1 151 6 is_stmt 0 view .LVU136
+ 590 018a 8091 0000 		lds r24,sbd.11
+ 591 018e 9091 0000 		lds r25,sbd.11+1
+ 592 0192 0196      		adiw r24,1
+ 593               		.loc 1 151 5 view .LVU137
+ 594 0194 9093 0000 		sts sbd.11+1,r25
+ 595 0198 8093 0000 		sts sbd.11,r24
+ 596 019c 8031      		cpi r24,16
+ 597 019e 27E2      		ldi r18,39
+ 598 01a0 9207      		cpc r25,r18
+ 599 01a2 01F4      		brne .L26
+ 152:main.c        **** 		{
+ 153:main.c        **** 			itobcd(touch, val);
+ 600               		.loc 1 153 4 is_stmt 1 view .LVU138
+ 601 01a4 60E0      		ldi r22,lo8(val.9)
+ 602 01a6 70E0      		ldi r23,hi8(val.9)
+ 603 01a8 8091 0000 		lds r24,touch.10
+ 604 01ac 9091 0000 		lds r25,touch.10+1
+ 605 01b0 00D0      		rcall itobcd
+ 606               	.LVL35:
+ 154:main.c        **** 			set_dot(2, 0);
+ 607               		.loc 1 154 4 view .LVU139
+ 608               	.LBB16:
+ 609               	.LBI16:
+  66:main.c        **** {
+ 610               		.loc 1 66 6 view .LVU140
+ 611               	.LBB17:
+  68:main.c        **** 	{
+ 612               		.loc 1 68 2 view .LVU141
+  70:main.c        **** 	}
+ 613               		.loc 1 70 3 view .LVU142
+  70:main.c        **** 	}
+ 614               		.loc 1 70 52 is_stmt 0 view .LVU143
+ 615 01b2 8091 0000 		lds r24,segment+2
+  70:main.c        **** 	}
+ 616               		.loc 1 70 14 view .LVU144
+ 617 01b6 8068      		ori r24,lo8(-128)
+ 618 01b8 8093 0000 		sts segment+2,r24
+ 619               	.LVL36:
+  70:main.c        **** 	}
+ 620               		.loc 1 70 14 view .LVU145
+ 621               	.LBE17:
+ 622               	.LBE16:
+ 155:main.c        **** 			for(i = 0; i < 4; ++i)
+ 623               		.loc 1 155 4 is_stmt 1 view .LVU146
+ 624               		.loc 1 155 15 view .LVU147
+ 625 01bc 00E0      		ldi r16,lo8(val.9)
+ 626 01be 10E0      		ldi r17,hi8(val.9)
+ 627               		.loc 1 155 10 is_stmt 0 view .LVU148
+ 628 01c0 C0E0      		ldi r28,0
+ 629               	.LVL37:
+ 630               	.L27:
+ 156:main.c        **** 			{
+ 157:main.c        **** 				set_num(i, val[i]);
+ 631               		.loc 1 157 5 is_stmt 1 discriminator 3 view .LVU149
+ 632 01c2 F801      		movw r30,r16
+ 633 01c4 6191      		ld r22,Z+
+ 634 01c6 8F01      		movw r16,r30
+ 635 01c8 8C2F      		mov r24,r28
+ 636 01ca 00D0      		rcall set_num
+ 637               	.LVL38:
+ 155:main.c        **** 			for(i = 0; i < 4; ++i)
+ 638               		.loc 1 155 22 discriminator 3 view .LVU150
+ 639 01cc CF5F      		subi r28,lo8(-(1))
+ 640               	.LVL39:
+ 155:main.c        **** 			for(i = 0; i < 4; ++i)
+ 641               		.loc 1 155 15 discriminator 3 view .LVU151
+ 155:main.c        **** 			for(i = 0; i < 4; ++i)
+ 642               		.loc 1 155 4 is_stmt 0 discriminator 3 view .LVU152
+ 643 01ce C430      		cpi r28,lo8(4)
+ 644 01d0 01F4      		brne .L27
+ 645               	.LVL40:
+ 646               	.L28:
+ 158:main.c        **** 			}			
+ 159:main.c        **** 		}
+ 160:main.c        **** 		else if(sbd == 20000)
+ 161:main.c        **** 		{
+ 162:main.c        **** 			sbd = 0;
+ 163:main.c        **** 			itobcd(hms, val);
+ 164:main.c        **** 			set_dot(2, 1);
+ 165:main.c        **** 			for(i = 0; i < 4; ++i)
+ 166:main.c        **** 			{
+ 167:main.c        **** 				set_num(i, val[i]);
+ 168:main.c        **** 			}
+ 169:main.c        **** 		}
+ 170:main.c        **** 	}
+ 171:main.c        **** 	else
+ 172:main.c        **** 	{
+ 173:main.c        **** 		/* 100 ms */
+ 174:main.c        **** 		if(running && (++cnt == 1000))
+ 175:main.c        **** 		{
+ 176:main.c        **** 			if(hms < 9999)
+ 177:main.c        **** 			{
+ 178:main.c        **** 				++hms;
+ 179:main.c        **** 
+ 180:main.c        **** 				if(!flash)
+ 181:main.c        **** 				{
+ 182:main.c        **** 					itobcd(hms, val);
+ 183:main.c        **** 					for(i = 0; i < 4; ++i)
+ 184:main.c        **** 					{
+ 185:main.c        **** 						set_num(i, val[i]);
+ 186:main.c        **** 					}
+ 187:main.c        **** 				}
+ 188:main.c        **** 			}
+ 189:main.c        **** 
+ 190:main.c        **** 			cnt = 0;
+ 191:main.c        **** 		}
+ 192:main.c        **** 
+ 193:main.c        **** 		if(flash && (++fct == 3500))
+ 194:main.c        **** 		{
+ 195:main.c        **** 			fct = 0;
+ 196:main.c        **** 			if((flash & 1) == 0)
+ 197:main.c        **** 			{
+ 198:main.c        **** 				for(i = 0; i < 4; ++i)
+ 199:main.c        **** 				{
+ 200:main.c        **** 					set_num(i, val[i]);
+ 201:main.c        **** 				}
+ 202:main.c        **** 			}
+ 203:main.c        **** 			else
+ 204:main.c        **** 			{
+ 205:main.c        **** 				for(i = 0; i < 4; ++i)
+ 206:main.c        **** 				{
+ 207:main.c        **** 					segment[i] = 0xFF;
+ 208:main.c        **** 				}
+ 209:main.c        **** 			}
+ 210:main.c        **** 
+ 211:main.c        **** 			if(--flash == 0)
+ 212:main.c        **** 			{
+ 213:main.c        **** 				set_dot(2, 1);
+ 214:main.c        **** 			}
+ 215:main.c        **** 		}
+ 216:main.c        **** 	}
+ 217:main.c        **** 
+ 218:main.c        **** 	/* 1 ms */
+ 219:main.c        **** 	if(++cms == 10)
+ 647               		.loc 1 219 2 is_stmt 1 view .LVU153
+ 648               		.loc 1 219 5 is_stmt 0 view .LVU154
+ 649 01d2 8091 0000 		lds r24,cms.3
+ 650 01d6 91E0      		ldi r25,lo8(1)
+ 651 01d8 980F      		add r25,r24
+ 652               		.loc 1 219 4 view .LVU155
+ 653 01da 8930      		cpi r24,lo8(9)
+ 654 01dc 01F4      		brne .+2
+ 655 01de 00C0      		rjmp .L41
+ 656 01e0 9093 0000 		sts cms.3,r25
+ 657               	.L42:
+ 220:main.c        **** 	{
+ 221:main.c        **** 		cms = 0;
+ 222:main.c        **** 		/* debouncing */
+ 223:main.c        **** 		/* wire touch */
+ 224:main.c        **** 		if(PINA & (1 << PA4))
+ 225:main.c        **** 		{
+ 226:main.c        **** 			btn_touch = 0;
+ 227:main.c        **** 		}
+ 228:main.c        **** 		else if(btn_touch < 50)
+ 229:main.c        **** 		{
+ 230:main.c        **** 			++btn_touch;
+ 231:main.c        **** 		}
+ 232:main.c        **** 		else if(btn_touch == 50)
+ 233:main.c        **** 		{
+ 234:main.c        **** 			btn_touch = 0xFF;
+ 235:main.c        **** 			if(touch < 9999) ++touch;
+ 236:main.c        **** 			flash = 7;
+ 237:main.c        **** 			fct = 0;
+ 238:main.c        **** 			itobcd(touch, val);
+ 239:main.c        **** 		}
+ 240:main.c        **** 
+ 241:main.c        **** 		/* reset */
+ 242:main.c        **** 		if(PINA & (1 << PA5))
+ 243:main.c        **** 		{
+ 244:main.c        **** 			btn_reset = 0;
+ 245:main.c        **** 		}
+ 246:main.c        **** 		else if(btn_reset < 50)
+ 247:main.c        **** 		{
+ 248:main.c        **** 			++btn_reset;
+ 249:main.c        **** 		}
+ 250:main.c        **** 		else if(btn_reset == 50)
+ 251:main.c        **** 		{
+ 252:main.c        **** 			btn_reset = 0xFF;
+ 253:main.c        **** 			running = 0;
+ 254:main.c        **** 			sbd = 0;
+ 255:main.c        **** 			sb = 1;
+ 256:main.c        **** 		}
+ 257:main.c        **** 
+ 258:main.c        **** 		/* continue */
+ 259:main.c        **** 		if(PINA & (1 << PA6))
+ 260:main.c        **** 		{
+ 261:main.c        **** 			btn_cont = 0;
+ 262:main.c        **** 		}
+ 263:main.c        **** 		else if(btn_cont < 50)
+ 264:main.c        **** 		{
+ 265:main.c        **** 			++btn_cont;
+ 266:main.c        **** 		}
+ 267:main.c        **** 		else if(btn_cont == 50)
+ 268:main.c        **** 		{
+ 269:main.c        **** 			btn_cont = 0xFF;
+ 270:main.c        **** 			if(sb)
+ 271:main.c        **** 			{
+ 272:main.c        **** 				sb = 0;
+ 273:main.c        **** 				hms = 0;
+ 274:main.c        **** 				touch = 0;
+ 275:main.c        **** 			}
+ 276:main.c        **** 			running = !running;
+ 277:main.c        **** 		}
+ 278:main.c        **** 	}
+ 279:main.c        **** 
+ 280:main.c        **** 	isr_led_disp();
+ 658               		.loc 1 280 2 is_stmt 1 view .LVU156
+ 659 01e4 00D0      		rcall isr_led_disp
+ 660               	.LVL41:
+ 661               	/* epilogue start */
+ 281:main.c        **** }
+ 662               		.loc 1 281 1 is_stmt 0 view .LVU157
+ 663 01e6 FF91      		pop r31
+ 664 01e8 EF91      		pop r30
+ 665 01ea DF91      		pop r29
+ 666 01ec CF91      		pop r28
+ 667 01ee BF91      		pop r27
+ 668 01f0 AF91      		pop r26
+ 669 01f2 9F91      		pop r25
+ 670 01f4 8F91      		pop r24
+ 671 01f6 7F91      		pop r23
+ 672 01f8 6F91      		pop r22
+ 673 01fa 5F91      		pop r21
+ 674 01fc 4F91      		pop r20
+ 675 01fe 3F91      		pop r19
+ 676 0200 2F91      		pop r18
+ 677 0202 1F91      		pop r17
+ 678 0204 0F91      		pop r16
+ 679 0206 0F90      		pop r0
+ 680 0208 0FBE      		out __SREG__,r0
+ 681 020a 0F90      		pop r0
+ 682 020c 1F90      		pop r1
+ 683 020e 1895      		reti
+ 684               	.L26:
+ 160:main.c        **** 		{
+ 685               		.loc 1 160 8 is_stmt 1 view .LVU158
+ 160:main.c        **** 		{
+ 686               		.loc 1 160 10 is_stmt 0 view .LVU159
+ 687 0210 8032      		cpi r24,32
+ 688 0212 9E44      		sbci r25,78
+ 689 0214 01F4      		brne .L28
+ 162:main.c        **** 			itobcd(hms, val);
+ 690               		.loc 1 162 4 is_stmt 1 view .LVU160
+ 162:main.c        **** 			itobcd(hms, val);
+ 691               		.loc 1 162 8 is_stmt 0 view .LVU161
+ 692 0216 1092 0000 		sts sbd.11+1,__zero_reg__
+ 693 021a 1092 0000 		sts sbd.11,__zero_reg__
+ 163:main.c        **** 			set_dot(2, 1);
+ 694               		.loc 1 163 4 is_stmt 1 view .LVU162
+ 695 021e 60E0      		ldi r22,lo8(val.9)
+ 696 0220 70E0      		ldi r23,hi8(val.9)
+ 697 0222 8091 0000 		lds r24,hms.8
+ 698 0226 9091 0000 		lds r25,hms.8+1
+ 699 022a 00D0      		rcall itobcd
+ 700               	.LVL42:
+ 164:main.c        **** 			for(i = 0; i < 4; ++i)
+ 701               		.loc 1 164 4 view .LVU163
+ 702               	.LBB18:
+ 703               	.LBI18:
+  66:main.c        **** {
+ 704               		.loc 1 66 6 view .LVU164
+ 705               	.LBB19:
+  68:main.c        **** 	{
+ 706               		.loc 1 68 2 view .LVU165
+  70:main.c        **** 	}
+ 707               		.loc 1 70 3 view .LVU166
+  70:main.c        **** 	}
+ 708               		.loc 1 70 30 is_stmt 0 view .LVU167
+ 709 022c 8091 0000 		lds r24,segment+2
+  70:main.c        **** 	}
+ 710               		.loc 1 70 14 view .LVU168
+ 711 0230 8F77      		andi r24,lo8(127)
+ 712 0232 8093 0000 		sts segment+2,r24
+ 713               	.LVL43:
+  70:main.c        **** 	}
+ 714               		.loc 1 70 14 view .LVU169
+ 715               	.LBE19:
+ 716               	.LBE18:
+ 165:main.c        **** 			{
+ 717               		.loc 1 165 4 is_stmt 1 view .LVU170
+ 165:main.c        **** 			{
+ 718               		.loc 1 165 15 view .LVU171
+ 719 0236 00E0      		ldi r16,lo8(val.9)
+ 720 0238 10E0      		ldi r17,hi8(val.9)
+ 165:main.c        **** 			{
+ 721               		.loc 1 165 10 is_stmt 0 view .LVU172
+ 722 023a C0E0      		ldi r28,0
+ 723               	.LVL44:
+ 724               	.L30:
+ 167:main.c        **** 			}
+ 725               		.loc 1 167 5 is_stmt 1 discriminator 3 view .LVU173
+ 726 023c F801      		movw r30,r16
+ 727 023e 6191      		ld r22,Z+
+ 728 0240 8F01      		movw r16,r30
+ 729 0242 8C2F      		mov r24,r28
+ 730 0244 00D0      		rcall set_num
+ 731               	.LVL45:
+ 165:main.c        **** 			{
+ 732               		.loc 1 165 22 discriminator 3 view .LVU174
+ 733 0246 CF5F      		subi r28,lo8(-(1))
+ 734               	.LVL46:
+ 165:main.c        **** 			{
+ 735               		.loc 1 165 15 discriminator 3 view .LVU175
+ 165:main.c        **** 			{
+ 736               		.loc 1 165 4 is_stmt 0 discriminator 3 view .LVU176
+ 737 0248 C430      		cpi r28,lo8(4)
+ 738 024a 01F4      		brne .L30
+ 739 024c 00C0      		rjmp .L28
+ 740               	.LVL47:
+ 741               	.L25:
+ 174:main.c        **** 		{
+ 742               		.loc 1 174 3 is_stmt 1 view .LVU177
+ 180:main.c        **** 				{
+ 743               		.loc 1 180 8 is_stmt 0 view .LVU178
+ 744 024e C091 0000 		lds r28,flash.5
+ 174:main.c        **** 		{
+ 745               		.loc 1 174 5 view .LVU179
+ 746 0252 8091 0000 		lds r24,running.7
+ 747 0256 8823      		tst r24
+ 748 0258 01F0      		breq .L32
+ 174:main.c        **** 		{
+ 749               		.loc 1 174 18 discriminator 1 view .LVU180
+ 750 025a 8091 0000 		lds r24,cnt.6
+ 751 025e 9091 0000 		lds r25,cnt.6+1
+ 752 0262 0196      		adiw r24,1
+ 174:main.c        **** 		{
+ 753               		.loc 1 174 14 discriminator 1 view .LVU181
+ 754 0264 9093 0000 		sts cnt.6+1,r25
+ 755 0268 8093 0000 		sts cnt.6,r24
+ 756 026c 883E      		cpi r24,-24
+ 757 026e 9340      		sbci r25,3
+ 758 0270 01F4      		brne .L32
+ 176:main.c        **** 			{
+ 759               		.loc 1 176 4 is_stmt 1 view .LVU182
+ 176:main.c        **** 			{
+ 760               		.loc 1 176 11 is_stmt 0 view .LVU183
+ 761 0272 8091 0000 		lds r24,hms.8
+ 762 0276 9091 0000 		lds r25,hms.8+1
+ 176:main.c        **** 			{
+ 763               		.loc 1 176 6 view .LVU184
+ 764 027a 8F30      		cpi r24,15
+ 765 027c 27E2      		ldi r18,39
+ 766 027e 9207      		cpc r25,r18
+ 767 0280 00F0      		brlo .L34
+ 768               	.L35:
+ 190:main.c        **** 		}
+ 769               		.loc 1 190 4 is_stmt 1 view .LVU185
+ 190:main.c        **** 		}
+ 770               		.loc 1 190 8 is_stmt 0 view .LVU186
+ 771 0282 1092 0000 		sts cnt.6+1,__zero_reg__
+ 772 0286 1092 0000 		sts cnt.6,__zero_reg__
+ 773               	.L32:
+ 193:main.c        **** 		{
+ 774               		.loc 1 193 3 is_stmt 1 view .LVU187
+ 193:main.c        **** 		{
+ 775               		.loc 1 193 5 is_stmt 0 view .LVU188
+ 776 028a CC23      		tst r28
+ 777 028c 01F4      		brne .+2
+ 778 028e 00C0      		rjmp .L28
+ 193:main.c        **** 		{
+ 779               		.loc 1 193 16 discriminator 1 view .LVU189
+ 780 0290 8091 0000 		lds r24,fct.4
+ 781 0294 9091 0000 		lds r25,fct.4+1
+ 782 0298 9C01      		movw r18,r24
+ 783 029a 2F5F      		subi r18,-1
+ 784 029c 3F4F      		sbci r19,-1
+ 193:main.c        **** 		{
+ 785               		.loc 1 193 12 discriminator 1 view .LVU190
+ 786 029e 8B3A      		cpi r24,-85
+ 787 02a0 9D40      		sbci r25,13
+ 788 02a2 01F0      		breq .L37
+ 193:main.c        **** 		{
+ 789               		.loc 1 193 12 view .LVU191
+ 790 02a4 3093 0000 		sts fct.4+1,r19
+ 791 02a8 2093 0000 		sts fct.4,r18
+ 792 02ac 00C0      		rjmp .L28
+ 793               	.L34:
+ 178:main.c        **** 
+ 794               		.loc 1 178 5 is_stmt 1 view .LVU192
+ 795 02ae 0196      		adiw r24,1
+ 796 02b0 9093 0000 		sts hms.8+1,r25
+ 797 02b4 8093 0000 		sts hms.8,r24
+ 180:main.c        **** 				{
+ 798               		.loc 1 180 5 view .LVU193
+ 180:main.c        **** 				{
+ 799               		.loc 1 180 7 is_stmt 0 view .LVU194
+ 800 02b8 C111      		cpse r28,__zero_reg__
+ 801 02ba 00C0      		rjmp .L35
+ 182:main.c        **** 					for(i = 0; i < 4; ++i)
+ 802               		.loc 1 182 6 is_stmt 1 view .LVU195
+ 803 02bc 60E0      		ldi r22,lo8(val.9)
+ 804 02be 70E0      		ldi r23,hi8(val.9)
+ 805 02c0 00D0      		rcall itobcd
+ 806               	.LVL48:
+ 183:main.c        **** 					{
+ 807               		.loc 1 183 6 view .LVU196
+ 183:main.c        **** 					{
+ 808               		.loc 1 183 17 view .LVU197
+ 809 02c2 00E0      		ldi r16,lo8(val.9)
+ 810 02c4 10E0      		ldi r17,hi8(val.9)
+ 183:main.c        **** 					{
+ 811               		.loc 1 183 12 is_stmt 0 view .LVU198
+ 812 02c6 D0E0      		ldi r29,0
+ 813               	.LVL49:
+ 814               	.L36:
+ 185:main.c        **** 					}
+ 815               		.loc 1 185 7 is_stmt 1 discriminator 3 view .LVU199
+ 816 02c8 F801      		movw r30,r16
+ 817 02ca 6191      		ld r22,Z+
+ 818 02cc 8F01      		movw r16,r30
+ 819 02ce 8D2F      		mov r24,r29
+ 820 02d0 00D0      		rcall set_num
+ 821               	.LVL50:
+ 183:main.c        **** 					{
+ 822               		.loc 1 183 24 discriminator 3 view .LVU200
+ 823 02d2 DF5F      		subi r29,lo8(-(1))
+ 824               	.LVL51:
+ 183:main.c        **** 					{
+ 825               		.loc 1 183 17 discriminator 3 view .LVU201
+ 183:main.c        **** 					{
+ 826               		.loc 1 183 6 is_stmt 0 discriminator 3 view .LVU202
+ 827 02d4 D430      		cpi r29,lo8(4)
+ 828 02d6 01F4      		brne .L36
+ 829 02d8 00C0      		rjmp .L35
+ 830               	.LVL52:
+ 831               	.L37:
+ 195:main.c        **** 			if((flash & 1) == 0)
+ 832               		.loc 1 195 4 is_stmt 1 view .LVU203
+ 195:main.c        **** 			if((flash & 1) == 0)
+ 833               		.loc 1 195 8 is_stmt 0 view .LVU204
+ 834 02da 1092 0000 		sts fct.4+1,__zero_reg__
+ 835 02de 1092 0000 		sts fct.4,__zero_reg__
+ 196:main.c        **** 			{
+ 836               		.loc 1 196 4 is_stmt 1 view .LVU205
+ 196:main.c        **** 			{
+ 837               		.loc 1 196 6 is_stmt 0 view .LVU206
+ 838 02e2 DC2F      		mov r29,r28
+ 839 02e4 D170      		andi r29,lo8(1)
+ 840 02e6 C0FF      		sbrs r28,0
+ 841 02e8 00C0      		rjmp .L38
+ 842               	.LVL53:
+ 205:main.c        **** 				{
+ 843               		.loc 1 205 16 is_stmt 1 view .LVU207
+ 207:main.c        **** 				}
+ 844               		.loc 1 207 6 view .LVU208
+ 207:main.c        **** 				}
+ 845               		.loc 1 207 17 is_stmt 0 view .LVU209
+ 846 02ea 8FEF      		ldi r24,lo8(-1)
+ 847 02ec 8093 0000 		sts segment,r24
+ 205:main.c        **** 				{
+ 848               		.loc 1 205 23 is_stmt 1 view .LVU210
+ 849               	.LVL54:
+ 205:main.c        **** 				{
+ 850               		.loc 1 205 16 view .LVU211
+ 207:main.c        **** 				}
+ 851               		.loc 1 207 6 view .LVU212
+ 207:main.c        **** 				}
+ 852               		.loc 1 207 17 is_stmt 0 view .LVU213
+ 853 02f0 8093 0000 		sts segment+1,r24
+ 205:main.c        **** 				{
+ 854               		.loc 1 205 23 is_stmt 1 view .LVU214
+ 855               	.LVL55:
+ 205:main.c        **** 				{
+ 856               		.loc 1 205 16 view .LVU215
+ 207:main.c        **** 				}
+ 857               		.loc 1 207 6 view .LVU216
+ 207:main.c        **** 				}
+ 858               		.loc 1 207 17 is_stmt 0 view .LVU217
+ 859 02f4 8093 0000 		sts segment+2,r24
+ 205:main.c        **** 				{
+ 860               		.loc 1 205 23 is_stmt 1 view .LVU218
+ 861               	.LVL56:
+ 205:main.c        **** 				{
+ 862               		.loc 1 205 16 view .LVU219
+ 207:main.c        **** 				}
+ 863               		.loc 1 207 6 view .LVU220
+ 207:main.c        **** 				}
+ 864               		.loc 1 207 17 is_stmt 0 view .LVU221
+ 865 02f8 8093 0000 		sts segment+3,r24
+ 205:main.c        **** 				{
+ 866               		.loc 1 205 23 is_stmt 1 view .LVU222
+ 867               	.LVL57:
+ 205:main.c        **** 				{
+ 868               		.loc 1 205 16 view .LVU223
+ 869               	.L39:
+ 211:main.c        **** 			{
+ 870               		.loc 1 211 4 view .LVU224
+ 211:main.c        **** 			{
+ 871               		.loc 1 211 7 is_stmt 0 view .LVU225
+ 872 02fc C150      		subi r28,lo8(-(-1))
+ 211:main.c        **** 			{
+ 873               		.loc 1 211 6 view .LVU226
+ 874 02fe C093 0000 		sts flash.5,r28
+ 875 0302 C111      		cpse r28,__zero_reg__
+ 876 0304 00C0      		rjmp .L28
+ 213:main.c        **** 			}
+ 877               		.loc 1 213 5 is_stmt 1 view .LVU227
+ 878               	.LVL58:
+ 879               	.LBB20:
+ 880               	.LBI20:
+  66:main.c        **** {
+ 881               		.loc 1 66 6 view .LVU228
+ 882               	.LBB21:
+  68:main.c        **** 	{
+ 883               		.loc 1 68 2 view .LVU229
+  70:main.c        **** 	}
+ 884               		.loc 1 70 3 view .LVU230
+  70:main.c        **** 	}
+ 885               		.loc 1 70 30 is_stmt 0 view .LVU231
+ 886 0306 8091 0000 		lds r24,segment+2
+  70:main.c        **** 	}
+ 887               		.loc 1 70 14 view .LVU232
+ 888 030a 8F77      		andi r24,lo8(127)
+ 889 030c 8093 0000 		sts segment+2,r24
+ 890 0310 00C0      		rjmp .L28
+ 891               	.LVL59:
+ 892               	.L38:
+  70:main.c        **** 	}
+ 893               		.loc 1 70 14 view .LVU233
+ 894 0312 00E0      		ldi r16,lo8(val.9)
+ 895 0314 10E0      		ldi r17,hi8(val.9)
+ 896               	.L40:
+ 897               	.LVL60:
+  70:main.c        **** 	}
+ 898               		.loc 1 70 14 view .LVU234
+ 899               	.LBE21:
+ 900               	.LBE20:
+ 200:main.c        **** 				}
+ 901               		.loc 1 200 6 is_stmt 1 discriminator 3 view .LVU235
+ 902 0316 F801      		movw r30,r16
+ 903 0318 6191      		ld r22,Z+
+ 904 031a 8F01      		movw r16,r30
+ 905 031c 8D2F      		mov r24,r29
+ 906 031e 00D0      		rcall set_num
+ 907               	.LVL61:
+ 198:main.c        **** 				{
+ 908               		.loc 1 198 23 discriminator 3 view .LVU236
+ 909 0320 DF5F      		subi r29,lo8(-(1))
+ 910               	.LVL62:
+ 198:main.c        **** 				{
+ 911               		.loc 1 198 16 discriminator 3 view .LVU237
+ 198:main.c        **** 				{
+ 912               		.loc 1 198 5 is_stmt 0 discriminator 3 view .LVU238
+ 913 0322 D430      		cpi r29,lo8(4)
+ 914 0324 01F4      		brne .L40
+ 915 0326 00C0      		rjmp .L39
+ 916               	.LVL63:
+ 917               	.L41:
+ 221:main.c        **** 		/* debouncing */
+ 918               		.loc 1 221 3 is_stmt 1 view .LVU239
+ 221:main.c        **** 		/* debouncing */
+ 919               		.loc 1 221 7 is_stmt 0 view .LVU240
+ 920 0328 1092 0000 		sts cms.3,__zero_reg__
+ 224:main.c        **** 		{
+ 921               		.loc 1 224 3 is_stmt 1 view .LVU241
+ 224:main.c        **** 		{
+ 922               		.loc 1 224 5 is_stmt 0 view .LVU242
+ 923 032c CC9B      		sbis 0x19,4
+ 924 032e 00C0      		rjmp .L43
+ 226:main.c        **** 		}
+ 925               		.loc 1 226 4 is_stmt 1 view .LVU243
+ 226:main.c        **** 		}
+ 926               		.loc 1 226 14 is_stmt 0 view .LVU244
+ 927 0330 1092 0000 		sts btn_touch.2,__zero_reg__
+ 928               	.L44:
+ 242:main.c        **** 		{
+ 929               		.loc 1 242 3 is_stmt 1 view .LVU245
+ 242:main.c        **** 		{
+ 930               		.loc 1 242 5 is_stmt 0 view .LVU246
+ 931 0334 CD9B      		sbis 0x19,5
+ 932 0336 00C0      		rjmp .L47
+ 244:main.c        **** 		}
+ 933               		.loc 1 244 4 is_stmt 1 view .LVU247
+ 244:main.c        **** 		}
+ 934               		.loc 1 244 14 is_stmt 0 view .LVU248
+ 935 0338 1092 0000 		sts btn_reset.1,__zero_reg__
+ 936               	.L48:
+ 259:main.c        **** 		{
+ 937               		.loc 1 259 3 is_stmt 1 view .LVU249
+ 259:main.c        **** 		{
+ 938               		.loc 1 259 5 is_stmt 0 view .LVU250
+ 939 033c CE9B      		sbis 0x19,6
+ 940 033e 00C0      		rjmp .L50
+ 261:main.c        **** 		}
+ 941               		.loc 1 261 4 is_stmt 1 view .LVU251
+ 261:main.c        **** 		}
+ 942               		.loc 1 261 13 is_stmt 0 view .LVU252
+ 943 0340 1092 0000 		sts btn_cont.0,__zero_reg__
+ 944 0344 00C0      		rjmp .L42
+ 945               	.L43:
+ 228:main.c        **** 		{
+ 946               		.loc 1 228 8 is_stmt 1 view .LVU253
+ 228:main.c        **** 		{
+ 947               		.loc 1 228 21 is_stmt 0 view .LVU254
+ 948 0346 8091 0000 		lds r24,btn_touch.2
+ 228:main.c        **** 		{
+ 949               		.loc 1 228 10 view .LVU255
+ 950 034a 8233      		cpi r24,lo8(50)
+ 951 034c 00F4      		brsh .L45
+ 230:main.c        **** 		}
+ 952               		.loc 1 230 4 is_stmt 1 view .LVU256
+ 953 034e 8F5F      		subi r24,lo8(-(1))
+ 954 0350 8093 0000 		sts btn_touch.2,r24
+ 955 0354 00C0      		rjmp .L44
+ 956               	.L45:
+ 232:main.c        **** 		{
+ 957               		.loc 1 232 8 view .LVU257
+ 232:main.c        **** 		{
+ 958               		.loc 1 232 10 is_stmt 0 view .LVU258
+ 959 0356 8233      		cpi r24,lo8(50)
+ 960 0358 01F4      		brne .L44
+ 234:main.c        **** 			if(touch < 9999) ++touch;
+ 961               		.loc 1 234 4 is_stmt 1 view .LVU259
+ 234:main.c        **** 			if(touch < 9999) ++touch;
+ 962               		.loc 1 234 14 is_stmt 0 view .LVU260
+ 963 035a 8FEF      		ldi r24,lo8(-1)
+ 964 035c 8093 0000 		sts btn_touch.2,r24
+ 235:main.c        **** 			flash = 7;
+ 965               		.loc 1 235 4 is_stmt 1 view .LVU261
+ 235:main.c        **** 			flash = 7;
+ 966               		.loc 1 235 13 is_stmt 0 view .LVU262
+ 967 0360 8091 0000 		lds r24,touch.10
+ 968 0364 9091 0000 		lds r25,touch.10+1
+ 235:main.c        **** 			flash = 7;
+ 969               		.loc 1 235 6 view .LVU263
+ 970 0368 8F30      		cpi r24,15
+ 971 036a F7E2      		ldi r31,39
+ 972 036c 9F07      		cpc r25,r31
+ 973 036e 00F4      		brsh .L46
+ 235:main.c        **** 			flash = 7;
+ 974               		.loc 1 235 21 is_stmt 1 discriminator 1 view .LVU264
+ 975 0370 0196      		adiw r24,1
+ 976 0372 9093 0000 		sts touch.10+1,r25
+ 977 0376 8093 0000 		sts touch.10,r24
+ 978               	.L46:
+ 236:main.c        **** 			fct = 0;
+ 979               		.loc 1 236 4 view .LVU265
+ 236:main.c        **** 			fct = 0;
+ 980               		.loc 1 236 10 is_stmt 0 view .LVU266
+ 981 037a 87E0      		ldi r24,lo8(7)
+ 982 037c 8093 0000 		sts flash.5,r24
+ 237:main.c        **** 			itobcd(touch, val);
+ 983               		.loc 1 237 4 is_stmt 1 view .LVU267
+ 237:main.c        **** 			itobcd(touch, val);
+ 984               		.loc 1 237 8 is_stmt 0 view .LVU268
+ 985 0380 1092 0000 		sts fct.4+1,__zero_reg__
+ 986 0384 1092 0000 		sts fct.4,__zero_reg__
+ 238:main.c        **** 		}
+ 987               		.loc 1 238 4 is_stmt 1 view .LVU269
+ 988 0388 60E0      		ldi r22,lo8(val.9)
+ 989 038a 70E0      		ldi r23,hi8(val.9)
+ 990 038c 8091 0000 		lds r24,touch.10
+ 991 0390 9091 0000 		lds r25,touch.10+1
+ 992 0394 00D0      		rcall itobcd
+ 993               	.LVL64:
+ 994 0396 00C0      		rjmp .L44
+ 995               	.L47:
+ 246:main.c        **** 		{
+ 996               		.loc 1 246 8 view .LVU270
+ 246:main.c        **** 		{
+ 997               		.loc 1 246 21 is_stmt 0 view .LVU271
+ 998 0398 8091 0000 		lds r24,btn_reset.1
+ 246:main.c        **** 		{
+ 999               		.loc 1 246 10 view .LVU272
+ 1000 039c 8233      		cpi r24,lo8(50)
+ 1001 039e 00F4      		brsh .L49
+ 248:main.c        **** 		}
+ 1002               		.loc 1 248 4 is_stmt 1 view .LVU273
+ 1003 03a0 8F5F      		subi r24,lo8(-(1))
+ 1004 03a2 8093 0000 		sts btn_reset.1,r24
+ 1005 03a6 00C0      		rjmp .L48
+ 1006               	.L49:
+ 250:main.c        **** 		{
+ 1007               		.loc 1 250 8 view .LVU274
+ 250:main.c        **** 		{
+ 1008               		.loc 1 250 10 is_stmt 0 view .LVU275
+ 1009 03a8 8233      		cpi r24,lo8(50)
+ 1010 03aa 01F4      		brne .L48
+ 252:main.c        **** 			running = 0;
+ 1011               		.loc 1 252 4 is_stmt 1 view .LVU276
+ 252:main.c        **** 			running = 0;
+ 1012               		.loc 1 252 14 is_stmt 0 view .LVU277
+ 1013 03ac 8FEF      		ldi r24,lo8(-1)
+ 1014 03ae 8093 0000 		sts btn_reset.1,r24
+ 253:main.c        **** 			sbd = 0;
+ 1015               		.loc 1 253 4 is_stmt 1 view .LVU278
+ 253:main.c        **** 			sbd = 0;
+ 1016               		.loc 1 253 12 is_stmt 0 view .LVU279
+ 1017 03b2 1092 0000 		sts running.7,__zero_reg__
+ 254:main.c        **** 			sb = 1;
+ 1018               		.loc 1 254 4 is_stmt 1 view .LVU280
+ 254:main.c        **** 			sb = 1;
+ 1019               		.loc 1 254 8 is_stmt 0 view .LVU281
+ 1020 03b6 1092 0000 		sts sbd.11+1,__zero_reg__
+ 1021 03ba 1092 0000 		sts sbd.11,__zero_reg__
+ 255:main.c        **** 		}
+ 1022               		.loc 1 255 4 is_stmt 1 view .LVU282
+ 255:main.c        **** 		}
+ 1023               		.loc 1 255 7 is_stmt 0 view .LVU283
+ 1024 03be 81E0      		ldi r24,lo8(1)
+ 1025 03c0 8093 0000 		sts sb.12,r24
+ 1026 03c4 00C0      		rjmp .L48
+ 1027               	.L50:
+ 263:main.c        **** 		{
+ 1028               		.loc 1 263 8 is_stmt 1 view .LVU284
+ 263:main.c        **** 		{
+ 1029               		.loc 1 263 20 is_stmt 0 view .LVU285
+ 1030 03c6 8091 0000 		lds r24,btn_cont.0
+ 263:main.c        **** 		{
+ 1031               		.loc 1 263 10 view .LVU286
+ 1032 03ca 8233      		cpi r24,lo8(50)
+ 1033 03cc 00F4      		brsh .L51
+ 265:main.c        **** 		}
+ 1034               		.loc 1 265 4 is_stmt 1 view .LVU287
+ 1035 03ce 8F5F      		subi r24,lo8(-(1))
+ 1036 03d0 8093 0000 		sts btn_cont.0,r24
+ 1037 03d4 00C0      		rjmp .L42
+ 1038               	.L51:
+ 267:main.c        **** 		{
+ 1039               		.loc 1 267 8 view .LVU288
+ 267:main.c        **** 		{
+ 1040               		.loc 1 267 10 is_stmt 0 view .LVU289
+ 1041 03d6 8233      		cpi r24,lo8(50)
+ 1042 03d8 01F0      		breq .+2
+ 1043 03da 00C0      		rjmp .L42
+ 269:main.c        **** 			if(sb)
+ 1044               		.loc 1 269 4 is_stmt 1 view .LVU290
+ 269:main.c        **** 			if(sb)
+ 1045               		.loc 1 269 13 is_stmt 0 view .LVU291
+ 1046 03dc 8FEF      		ldi r24,lo8(-1)
+ 1047 03de 8093 0000 		sts btn_cont.0,r24
+ 270:main.c        **** 			{
+ 1048               		.loc 1 270 4 is_stmt 1 view .LVU292
+ 270:main.c        **** 			{
+ 1049               		.loc 1 270 6 is_stmt 0 view .LVU293
+ 1050 03e2 8091 0000 		lds r24,sb.12
+ 1051 03e6 8823      		tst r24
+ 1052 03e8 01F0      		breq .L53
+ 272:main.c        **** 				hms = 0;
+ 1053               		.loc 1 272 5 is_stmt 1 view .LVU294
+ 272:main.c        **** 				hms = 0;
+ 1054               		.loc 1 272 8 is_stmt 0 view .LVU295
+ 1055 03ea 1092 0000 		sts sb.12,__zero_reg__
+ 273:main.c        **** 				touch = 0;
+ 1056               		.loc 1 273 5 is_stmt 1 view .LVU296
+ 273:main.c        **** 				touch = 0;
+ 1057               		.loc 1 273 9 is_stmt 0 view .LVU297
+ 1058 03ee 1092 0000 		sts hms.8+1,__zero_reg__
+ 1059 03f2 1092 0000 		sts hms.8,__zero_reg__
+ 274:main.c        **** 			}
+ 1060               		.loc 1 274 5 is_stmt 1 view .LVU298
+ 274:main.c        **** 			}
+ 1061               		.loc 1 274 11 is_stmt 0 view .LVU299
+ 1062 03f6 1092 0000 		sts touch.10+1,__zero_reg__
+ 1063 03fa 1092 0000 		sts touch.10,__zero_reg__
+ 1064               	.L53:
+ 276:main.c        **** 		}
+ 1065               		.loc 1 276 4 is_stmt 1 view .LVU300
+ 276:main.c        **** 		}
+ 1066               		.loc 1 276 14 is_stmt 0 view .LVU301
+ 1067 03fe 81E0      		ldi r24,lo8(1)
+ 1068 0400 9091 0000 		lds r25,running.7
+ 1069 0404 9111      		cpse r25,__zero_reg__
+ 1070 0406 80E0      		ldi r24,0
+ 1071               	.L54:
+ 276:main.c        **** 		}
+ 1072               		.loc 1 276 12 view .LVU302
+ 1073 0408 8093 0000 		sts running.7,r24
+ 1074 040c 00C0      		rjmp .L42
+ 1075               		.cfi_endproc
+ 1076               	.LFE5:
+ 1078               		.local	btn_cont.0
+ 1079               		.comm	btn_cont.0,1,1
+ 1080               		.local	btn_reset.1
+ 1081               		.comm	btn_reset.1,1,1
+ 1082               		.local	btn_touch.2
+ 1083               		.comm	btn_touch.2,1,1
+ 1084               		.local	cms.3
+ 1085               		.comm	cms.3,1,1
+ 1086               		.local	fct.4
+ 1087               		.comm	fct.4,2,1
+ 1088               		.local	flash.5
+ 1089               		.comm	flash.5,1,1
+ 1090               		.local	cnt.6
+ 1091               		.comm	cnt.6,2,1
+ 1092               		.local	running.7
+ 1093               		.comm	running.7,1,1
+ 1094               		.local	hms.8
+ 1095               		.comm	hms.8,2,1
+ 1096               		.local	val.9
+ 1097               		.comm	val.9,4,1
+ 1098               		.local	touch.10
+ 1099               		.comm	touch.10,2,1
+ 1100               		.local	sbd.11
+ 1101               		.comm	sbd.11,2,1
+ 1102               		.local	sb.12
+ 1103               		.comm	sb.12,1,1
+ 1104               		.local	cur_seg.13
+ 1105               		.comm	cur_seg.13,1,1
+ 1106               	.global	segment
+ 1107               		.data
+ 1110               	segment:
+ 1111 0000 FFFF FFFF 		.ascii	"\377\377\377\377"
+ 1112               	.global	num
+ 1113               		.section	.rodata
+ 1116               	num:
+ 1117 0000 4079 2430 		.string	"@y$0\031\022\002x"
+ 1117      1912 0278 
+ 1117      00
+ 1118 0009 10        		.ascii	"\020"
+ 1119               		.text
+ 1120               	.Letext0:
+ 1121               		.file 2 "/usr/avr/include/stdint.h"
+ 1122               		.file 3 "<built-in>"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 main.c
+     /tmp/ccNzI8kK.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/ccNzI8kK.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/ccNzI8kK.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/ccNzI8kK.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/ccNzI8kK.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/ccNzI8kK.s:12     .text:0000000000000000 set_num
+     /tmp/ccNzI8kK.s:1110   .data:0000000000000000 segment
+     /tmp/ccNzI8kK.s:1116   .rodata:0000000000000000 num
+     /tmp/ccNzI8kK.s:59     .text.startup:0000000000000000 main
+     /tmp/ccNzI8kK.s:145    .text:0000000000000022 set_dot
+     /tmp/ccNzI8kK.s:211    .text:000000000000004a isr_led_disp
+     /tmp/ccNzI8kK.s:1103   .bss:0000000000000015 cur_seg.13
+     /tmp/ccNzI8kK.s:285    .text:000000000000009e itobcd
+     /tmp/ccNzI8kK.s:494    .text:0000000000000156 __vector_14
+     /tmp/ccNzI8kK.s:1101   .bss:0000000000000014 sb.12
+     /tmp/ccNzI8kK.s:1099   .bss:0000000000000012 sbd.11
+     /tmp/ccNzI8kK.s:1095   .bss:000000000000000c val.9
+     /tmp/ccNzI8kK.s:1097   .bss:0000000000000010 touch.10
+     /tmp/ccNzI8kK.s:1083   .bss:0000000000000003 cms.3
+     /tmp/ccNzI8kK.s:1093   .bss:000000000000000a hms.8
+     /tmp/ccNzI8kK.s:1087   .bss:0000000000000006 flash.5
+     /tmp/ccNzI8kK.s:1091   .bss:0000000000000009 running.7
+     /tmp/ccNzI8kK.s:1089   .bss:0000000000000007 cnt.6
+     /tmp/ccNzI8kK.s:1085   .bss:0000000000000004 fct.4
+     /tmp/ccNzI8kK.s:1081   .bss:0000000000000002 btn_touch.2
+     /tmp/ccNzI8kK.s:1079   .bss:0000000000000001 btn_reset.1
+                             .bss:0000000000000000 btn_cont.0
+
+UNDEFINED SYMBOLS
+__udivmodhi4
+memset
+__do_copy_data
+__do_clear_bss
